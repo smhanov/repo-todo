@@ -92,6 +92,15 @@ All state lives in `.plans/todo.md`. The structure is fixed so agents (and human
 
 Every task gets an **immutable ID** (`T001`, `T002`, …) that is never reused or renumbered — plan filenames carry the ID (`T001-pagination-fix.md`), so links survive reordering, and history stays traceable. One row per task, in exactly one section, always.
 
+Agents must not invent that ID or copy `T001` from an example. Find the last one in this checkout and add 1:
+
+```bash
+ls -1 .plans/T*.md | tail -1
+# .plans/T014-widget-export.md  → next ID is T015
+```
+
+`ls .plans | tail` is not enough — `todo.md` sorts last and hides the real ID. Also scan the board, because a row can exist without a file. The required commands are in [`SKILL.md`](SKILL.md).
+
 ## Draft plans: capture now, think later
 
 Good ideas shouldn't wait for full designs. When the *what* is clear but the *how* isn't yet, record a **draft** plan:
@@ -197,6 +206,7 @@ git clone https://github.com/smhanov/repo-todo ~/.config/opencode/skills/repo-to
 - **Keep the board honest.** The board is authoritative for status — if it's not on the board, it doesn't exist. Record newly discovered work as new rows immediately.
 - **Review plans, not just results.** The implementation overview and acceptance criteria are written for you — a one-minute skim before saying "go" is the highest-leverage minute in the workflow.
 - **Plans are self-contained.** They link real files and symbols, verify commands exist, and never invent paths or test results. Future-you (and future agents) depend on it.
+- **Do not point source code at plans.** `.plans/` is gitignored working notes. A comment, import, or task ID in source is a broken link for everyone else.
 - **Preserve done rows.** Completed tasks and their plans are the project's decision log — keep them.
 
 ## License

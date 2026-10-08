@@ -12,6 +12,7 @@ Use this for a repository's bugs, features, implementation plans, and task statu
 - Use the target checkout root; read its applicable agent instructions, existing board, and existing files in `.plans/`. Create `.plans/` and `.plans/todo.md` if absent; preserve existing tasks and plans.
 - Ensure root `.gitignore` ignores `.plans/`; append `/.plans/` only if no effective rule there covers it. Preserve other rules; verify with `git check-ignore --no-index`. Do not untrack already tracked files automatically.
 - Treat `.plans/todo.md` as authoritative for status. Ignored plans are checkout-local: parallel worktrees need one coordinator board and explicit plan handoffs.
+- Never refer to plans in source code. `.plans/` contents are temporary working notes, not part of the codebase. Do not add imports, comments, links, or task/plan IDs pointing at plans in source files.
 
 ## Board
 
@@ -38,12 +39,26 @@ Use this exact structure; keep empty tables. One row per item, in exactly one se
 ```
 
 - Priorities: P0 urgent failure; P1 important; P2 normal/default. Sort open sections by priority, then ID; Done newest first.
-- ID allocation: Always check both `.plans/todo.md` and the entire `.plans/` folder (list all files in `.plans/`). Note that not all plans are listed in `todo.md`. Inspect all existing IDs across both the board and every filename in `.plans/` (e.g. `T001-*.md`). Choose a free ID strictly above the maximum existing ID found anywhere (`T001`, `T002`, …); never reuse an existing ID or renumber. Preserve existing unique IDs during migration.
-- Example row: `| P1 | T001 | Fix retry loop — [plan](T001-retry-loop.md) | draft |`.
+- ID allocation: Do not invent an ID, and do not copy `T001` from the example below or from any other repo. Plan files and board rows diverge, so take the higher number from both, then use the next integer. Never reuse or renumber. Preserve existing unique IDs during migration.
+
+  `ls .plans | tail` is the wrong command: `todo.md` sorts after `T*.md` and hides the last task. Glob the plan files, then take the numeric max so `T1000` does not sort before `T999`.
+
+  ```bash
+  # last plan file, if any — empty means no plan files yet
+  ls -1 .plans/T*.md 2>/dev/null | tail -1
+
+  # highest number already used by a filename OR a board row; empty means none
+  { ls -1 .plans/T*.md 2>/dev/null; grep -oE 'T[0-9]+' .plans/todo.md 2>/dev/null; } | grep -oE '[0-9]+' | sort -n | tail -1
+  ```
+
+  Example: `ls -1 .plans/T*.md | tail -1` prints `.plans/T014-widget-export.md`, and the numeric command prints `14`. The next ID is `T015` (14 + 1, zero-padded to at least 3 digits). If both commands print nothing, the next ID is `T001`.
+
+  Claim that ID before editing the board: create `.plans/T015-<slug>.md` first, then re-run the numeric command. It must print `15`, and `ls -1 .plans/T015*.md` must show exactly one file. If it prints a higher number, another writer took an ID — allocate again. Do not write a second file with an ID that already exists.
+- Example row (format only — this ID is not free): `| P1 | T001 | Fix retry loop — [plan](T001-retry-loop.md) | draft |`.
 
 ## Workflow
 
-1. **Capture:** Check for duplicates. Inspect the `.plans/` directory (list all filenames) and `.plans/todo.md` to identify all used IDs, since some plan files might not be listed on the board. Choose a free ID strictly above the maximum found. Add a Todo row and `.plans/<ID>-<slug>.md`. Read [plan template](references/plan-template.md) when creating or expanding plans. Every plan must include an implementation overview describing the overall approach and architectural changes so human reviewers understand the plan without deducing it from granular steps. Default to a ready plan when enough context exists; otherwise save a draft with the required expansion warning. Recording work does not authorize implementation.
+1. **Capture:** Check for duplicates. Allocate the ID by running the commands under ID allocation in this checkout — do not choose one from memory. Create `.plans/<ID>-<slug>.md` first, confirm the re-check, then add the Todo row. Read [plan template](references/plan-template.md) when creating or expanding plans. Every plan must include an implementation overview describing the overall approach and architectural changes so human reviewers understand the plan without deducing it from granular steps. Default to a ready plan when enough context exists; otherwise save a draft with the required expansion warning. Recording work does not authorize implementation.
 2. **Prepare:** Before implementation, inspect current source, expand drafts (including a clear implementation overview and verified steps), resolve blocking unknowns, and verify dependencies. Mark the plan `ready` only when executable without guessing requirements.
 3. **Claim:** Move an eligible item to In Progress; Notes must contain `owner=<agent/session>; updated=<UTC timestamp>`. Follow requested scope; otherwise choose the highest-priority eligible item. Never take another active owner's item without a handoff.
 4. **Execute:** Work in the plan's verified increments. Update its checkboxes, evidence, and next action after each increment and before stopping. Record newly discovered unrelated work separately.

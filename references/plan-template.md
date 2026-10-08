@@ -1,5 +1,7 @@
 # Plan template
 
+The `<ID>` in the title must be the ID just allocated by the `ls | tail` procedure in SKILL.md. Do not invent one, and do not copy an example ID from this file.
+
 Keep plans self-contained and proportional to the task. Replace instructions below with concrete facts; omit genuinely irrelevant sections. Link source paths/symbols, not just conversation history. Recheck source before execution; label hypotheses and never invent paths, commands, or test results. Always provide an implementation overview so human reviewers can grasp the overall technical approach at a glance without having to deduce it from granular steps.
 
 ## Draft

@@ -63,7 +63,7 @@ Use this exact structure; keep empty tables. One row per item, in exactly one se
 3. **Claim:** Move an eligible item to In Progress; Notes must contain `owner=<agent/session>; updated=<UTC timestamp>`. Follow requested scope; otherwise choose the highest-priority eligible item. Never take another active owner's item without a handoff.
 4. **Execute:** Work in the plan's verified increments. Update its checkboxes, evidence, and next action after each increment and before stopping. Record newly discovered unrelated work separately.
 5. **Block:** Move to Blocked; Notes must identify the blocker/dependency and concrete unblock action. Preserve owner and detailed handoff in the plan. When resolved, return to Todo or explicitly reclaim.
-6. **Complete:** Check every acceptance criterion against evidence, run applicable checks, and review the diff for scope/regressions. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `completed=YYYY-MM-DD`. Reopen regressions under the same ID.
+6. **Complete:** Check every acceptance criterion against evidence, run applicable checks, and review the diff for scope/regressions. Ensure plan names (`T\d\d\d\d`) do not appear in the source code or docs to be committed. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `completed=YYYY-MM-DD`. Reopen regressions under the same ID.
 
 ## Do All
 

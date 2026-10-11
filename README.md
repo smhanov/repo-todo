@@ -135,10 +135,10 @@ Every plan — draft or ready — uses one template. Each section earns its plac
 | **Missing before ready** (drafts only) | Forces unknowns to be explicit *before* work starts. "We'll figure it out as we go" is where implementations go wrong. |
 | **Outcome and scope** | Observable desired behavior plus explicit exclusions. Scope creep and "while I'm in here" refactors die here. |
 | **Context and prerequisites** | Verified files, symbols, and dependencies, linked to real source. This is what makes a plan self-contained and resumable by a fresh agent in a new session. |
-| **Acceptance criteria** | Concrete, checkable "given X, when Y, then Z" statements — the definition of done. Vague plans produce vague results; criteria map 1:1 to verification. |
 | **Implementation overview** | The human-reviewable summary: strategy, architectural changes, design decisions. A reviewer grasps the whole approach in a minute — this is the section that keeps *your* mental model current. |
 | **Implementation steps** | Small, independently verifiable increments, written so a junior agent can follow them — because that's literally who follows them. |
-| **Verification** | The exact command, working directory, and expected result for each criterion. Evidence over claims: "it works" is not a result. |
+| **Verification** | The exact command, working directory, and expected result for each criterion, written against the acceptance criteria that follow. Evidence over claims: "it works" is not a result. |
+| **Acceptance criteria** | Concrete, checkable "given X, when Y, then Z" statements — the definition of done, and the closing word of the plan. Vague plans produce vague results; criteria map 1:1 to verification. |
 | **Risks and recovery** | Material risks, mitigations, and rollback — decided before destructive or schema-changing work, not after. |
 | **Progress and handoff** | A running log of completed steps, evidence, and the specific next action. Any agent — or you, a week later — can resume mid-task without archaeology. |
 

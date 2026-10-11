@@ -33,12 +33,6 @@ expected versus actual behavior.>
 <Verified files/symbols, relevant contracts, existing patterns, setup and working
 directory, dependencies by task ID, assumptions and resolved decisions.>
 
-## Acceptance criteria
-- [ ] AC1: <Given concrete input/state, when action occurs, observable result is X.>
-- [ ] AC2: <Relevant error/boundary behavior; specify measurable thresholds if needed.>
-<Map each criterion to a named test or reproducible manual check; avoid "works",
-"robust", or implementation-only criteria. Preserve required existing behavior.>
-
 ## Implementation overview
 <High-level summary of how the solution will be implemented. Explain the overall
 strategy, architectural/structural changes, affected components/subsystems, data flow,
@@ -52,13 +46,20 @@ glance without having to deduce it from granular steps.>
    callers, error paths, and migration/compatibility concerns where relevant.>
 
 ## Verification
-<For each AC: command/check, working directory, setup/fixtures, expected result.
-Cover the critical user journey and relevant failure paths, not only mocked internals.
-For bugs, add and observe a regression test failing for the intended reason before
-fixing, where practical. For new behavior, test first where useful. For low-impact
-edits, use direct checks; document why an automated test is unsuitable.
-Include relevant regression/build/lint gates from the repo. Never weaken criteria
-or tests merely to pass; record and justify legitimate scope changes.>
+<For each acceptance criterion listed below: command/check, working directory,
+setup/fixtures, expected result. Cover the critical user journey and relevant
+failure paths, not only mocked internals. For bugs, add and observe a regression
+test failing for the intended reason before fixing, where practical. For new
+behavior, test first where useful. For low-impact edits, use direct checks;
+document why an automated test is unsuitable. Include relevant
+regression/build/lint gates from the repo. Never weaken criteria or tests merely
+to pass; record and justify legitimate scope changes.>
+
+## Acceptance criteria
+- [ ] AC1: <Given concrete input/state, when action occurs, observable result is X.>
+- [ ] AC2: <Relevant error/boundary behavior; specify measurable thresholds if needed.>
+<Map each criterion to a named test or reproducible manual check; avoid "works",
+"robust", or implementation-only criteria. Preserve required existing behavior.>
 
 ## Risks and recovery
 <Material risks and mitigations; rollback for destructive/schema/deployment changes.>

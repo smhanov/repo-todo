@@ -206,7 +206,7 @@ git clone https://github.com/smhanov/repo-todo ~/.config/opencode/skills/repo-to
 - **Keep the board honest.** The board is authoritative for status — if it's not on the board, it doesn't exist. Record newly discovered work as new rows immediately.
 - **Review plans, not just results.** The implementation overview and acceptance criteria are written for you — a one-minute skim before saying "go" is the highest-leverage minute in the workflow.
 - **Plans are self-contained.** They link real files and symbols, verify commands exist, and never invent paths or test results. Future-you (and future agents) depend on it.
-- **Do not point source code at plans.** `.plans/` is gitignored working notes. A comment, import, or task ID in source is a broken link for everyone else.
+- **Do not point source code at plans.** `.plans/` is gitignored working notes. A comment, import, or task ID in source is a broken link for everyone else. The Complete step greps committed files for `T` + 3 or more digits; a token that legitimately isn't a plan (a part number, say) is exempted with a trailing `repo-todo:ignore` comment and a line in the plan's evidence.
 - **Preserve done rows.** Completed tasks and their plans are the project's decision log — keep them.
 
 ## License

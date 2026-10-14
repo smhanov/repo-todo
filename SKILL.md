@@ -63,7 +63,15 @@ Use this exact structure; keep empty tables. One row per item, in exactly one se
 3. **Claim:** Move an eligible item to In Progress; Notes must contain `owner=<agent/session>; updated=<UTC timestamp>`. Follow requested scope; otherwise choose the highest-priority eligible item. Never take another active owner's item without a handoff.
 4. **Execute:** Work in the plan's verified increments. Update its checkboxes, evidence, and next action after each increment and before stopping. Record newly discovered unrelated work separately.
 5. **Block:** Move to Blocked; Notes must identify the blocker/dependency and concrete unblock action. Preserve owner and detailed handoff in the plan. When resolved, return to Todo or explicitly reclaim.
-6. **Complete:** Check every acceptance criterion against evidence, run applicable checks, and review the diff for scope/regressions. Ensure plan names (`T\d\d\d\d`) do not appear in the source code or docs to be committed. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `completed=YYYY-MM-DD`. Reopen regressions under the same ID.
+6. **Complete:** Check every acceptance criterion against evidence, run applicable checks, and review the diff for scope/regressions. Plan names (`T` plus 3 or more digits — IDs are zero-padded to at least 3) must not appear in the source or docs to be committed; run this at the checkout root and require no output:
+
+   ```bash
+   git grep -nE '(^|[^A-Za-z0-9_])T[0-9]{3,}([^0-9]|$)' -- . ':!.plans' | grep -v 'repo-todo:ignore'
+   ```
+
+   Write it in that POSIX form, not with `\b`: git grep uses the system regex engine, and the BSD regex on macOS never matches `\b`, so the check would silently pass there while missing every ID.
+
+   A match is a candidate, not proof of a plan reference: source may legitimately hold a token of that shape (part number, model, fixture, error code). Resolve each one instead of guessing. Remove real plan references. For a legitimate token, confirm it is not a plan in this checkout (`ls -1 .plans/<ID>*.md` prints nothing), add a trailing `repo-todo:ignore` comment on that line beside the token, and record the `file:line` and the reason in the plan's evidence — the pragma exempts that one line, visibly, for the next reviewer. Never exempt a line whose token does resolve to a plan in `.plans/`, and never mark a whole file or directory to silence the check. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `completed=YYYY-MM-DD`. Reopen regressions under the same ID.
 
 ## Do All
 

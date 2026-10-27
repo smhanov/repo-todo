@@ -87,5 +87,5 @@ Serialize board writes through one coordinator when agents run concurrently; an 
 
 ## Standing facts (2026-10)
 
-- Checkouts carrying repo-todo: Hermes `skills/`, e14 + steve-air `opencode` skills dirs, steve-air Claude `skills/`, staging at `~/workspace/repo-todo`.
+- Checkouts carrying repo-todo: Hermes `skills/`, e14 + steve-air + aorus `opencode` skills dirs, steve-air Claude `skills/`, staging at `~/workspace/repo-todo`.
 - Multi-task pushes = Do-All: run subagents SERIALLY; the parent verifies + commits. Never let two agents edit the same files in parallel.

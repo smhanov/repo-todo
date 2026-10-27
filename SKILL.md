@@ -66,10 +66,10 @@ Use this exact structure; keep empty tables. One row per item, in exactly one se
 6. **Complete:** Check every acceptance criterion against evidence, run applicable checks, and review the diff for scope/regressions. Plan names (`T` plus 3 or more digits — IDs are zero-padded to at least 3) must not appear in the source or docs to be committed; run this at the checkout root and require no output:
 
    ```bash
-   git grep -nE '(^|[^A-Za-z0-9_])T[0-9]{3,}([^0-9]|$)' -- . ':!.plans' | grep -v 'repo-todo:ignore'
+   git grep -nIE '(^|[^A-Za-z0-9_])T[0-9]{3,}([^0-9]|$)' -- . ':!.plans' | grep -v 'repo-todo:ignore'
    ```
 
-   Write it in that POSIX form, not with `\b`: git grep uses the system regex engine, and the BSD regex on macOS never matches `\b`, so the check would silently pass there while missing every ID.
+   Write it in that POSIX form, not with `\b`: git grep uses the system regex engine, and the BSD regex on macOS never matches `\b`, so the check would silently pass there while missing every ID. The `-I` flag makes git grep skip binary files: their bytes can coincidentally match the pattern (e.g. a PNG, whose compressed data happens to spell out a `T`-plus-digits token), and a binary cannot carry a `repo-todo:ignore` pragma to exempt it, so without `-I` the gate would fail on an asset that is not a plan reference at all.
 
    A match is a candidate, not proof of a plan reference: source may legitimately hold a token of that shape (part number, model, fixture, error code). Resolve each one instead of guessing. Remove real plan references. For a legitimate token, confirm it is not a plan in this checkout (`ls -1 .plans/<ID>*.md` prints nothing), then clear it with judgment. When the token is obviously not a plan reference — its meaning is plain from the line itself (a fixture, a hex constant, an error code, a version string) — you may dismiss it without touching the source; record the `file:line`, the token, and the reason in the plan's evidence so a reviewer can audit the call. When the token could plausibly be mistaken for a plan ID, make the exemption visible: add a trailing `repo-todo:ignore` comment on that line beside the token, and record the `file:line` and reason in the plan's evidence. Never exempt or dismiss a line whose token does resolve to a plan in `.plans/`, and never mark a whole file or directory to silence the check. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `completed=YYYY-MM-DD`. Reopen regressions under the same ID.
 

@@ -92,14 +92,20 @@ All state lives in `.plans/todo.md`. The structure is fixed so agents (and human
 
 Every task gets an **immutable ID** (`T001`, `T002`, …) that is never reused or renumbered — plan filenames carry the ID (`T001-pagination-fix.md`), so links survive reordering, and history stays traceable. One row per task, in exactly one section, always.
 
-Agents must not invent that ID or copy `T001` from an example. Find the last one in this checkout and add 1:
+Agents must not invent that ID or copy `T001` from an example. Run `python3 <skill-dir>/board.py next-id` — it takes the numeric max across plan filenames **and** board rows, then adds 1 (so `T1000` never sorts before `T999`). The manual commands live in [`SKILL.md`](SKILL.md).
+
+## Board script
+
+Hand-editing `todo.md` is how duplicate rows happen, so the skill ships `board.py` — a single-file, stdlib-only Python 3 script (any python3 ≥ 3.6; Linux, macOS, WSL, CI) that does the mechanical parts identically everywhere. Run it from the repo root:
 
 ```bash
-ls -1 .plans/T*.md | tail -1
-# .plans/T014-widget-export.md  → next ID is T015
+python3 <skill-dir>/board.py validate    # duplicates, bad priorities, missing/orphaned plan files, convention drift
+python3 <skill-dir>/board.py next-id     # the next free task ID
+python3 <skill-dir>/board.py move T007 in-progress --notes "owner=agent; updated=2026-10-27T17:00Z"
+python3 <skill-dir>/board.py move T007 done --priority P1 --notes "completed=2026-10-27"
 ```
 
-`ls .plans | tail` is not enough — `todo.md` sorts last and hides the real ID. Also scan the board, because a row can exist without a file. The required commands are in [`SKILL.md`](SKILL.md).
+`move` is idempotent and can never create a duplicate: it relocates the single row for that ID, collapses any duplicates already on the board (with a warning), and inserts in board order — priority then ID for open sections, newest first in Done. `validate` exits 1 when it finds a real problem (duplicate IDs, a row with no plan file, an orphaned plan file, an invalid priority), so it can gate a completion claim. Prefer the script over editing the board by hand; the manual procedures are the fallback for machines without python3.
 
 ## Draft plans: capture now, think later
 

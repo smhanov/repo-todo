@@ -39,7 +39,7 @@ Use this exact structure; keep empty tables. One row per item, in exactly one se
 ```
 
 - Priorities: P0 urgent failure; P1 important; P2 normal/default. Sort open sections by priority, then ID; Done newest first.
-- ID allocation: Do not invent an ID, and do not copy `T001` from the example below or from any other repo. Plan files and board rows diverge, so take the higher number from both, then use the next integer. Never reuse or renumber. Preserve existing unique IDs during migration.
+- ID allocation: Do not invent an ID, and do not copy `T001` from the example below or from any other repo. Never reuse or renumber. Preserve existing unique IDs during migration. Run `python3 <this-skill-dir>/board.py next-id` — it implements the rule below. To do it by hand: plan files and board rows diverge, so take the higher number from both, then use the next integer.
 
   `ls .plans | tail` is the wrong command: `todo.md` sorts after `T*.md` and hides the last task. Glob the plan files, then take the numeric max so `T1000` does not sort before `T999`.
 
@@ -56,13 +56,28 @@ Use this exact structure; keep empty tables. One row per item, in exactly one se
   Claim that ID before editing the board: create `.plans/T015-<slug>.md` first, then re-run the numeric command. It must print `15`, and `ls -1 .plans/T015*.md` must show exactly one file. If it prints a higher number, another writer took an ID — allocate again. Do not write a second file with an ID that already exists.
 - Example row (format only — this ID is not free): `| P1 | T001 | Fix retry loop — [plan](T001-retry-loop.md) | draft |`.
 
+### Board script
+
+This skill ships `board.py` next to this file: a stdlib-only Python 3 script (any python3 ≥ 3.6; Linux, macOS, anywhere) that does the mechanical board work without the hand-editing mistakes that create duplicate rows. Prefer it for every board transition, ID allocation, and check; the manual procedures in this file are the fallback when python3 is unavailable. Run it from the checkout root (or pass `--root <path>`):
+
+```bash
+python3 <this-skill-dir>/board.py validate   # list problems; exit 0 clean, 1 if any ERROR
+python3 <this-skill-dir>/board.py next-id    # prints the next free ID (numeric max of plan files AND board rows, + 1)
+python3 <this-skill-dir>/board.py move T007 in-progress --notes "owner=<agent>; updated=<UTC timestamp>"
+python3 <this-skill-dir>/board.py move T007 done --priority P1 --notes "completed=2026-10-27"
+```
+
+- `move` never creates duplicates: it relocates the row for that ID, collapses any duplicates already on the board (printing a warning), inserts in board order (priority, then ID; Done newest first), and is a no-op when the row is already in place. `--notes` replaces the Notes cell; `--priority P#` re-prioritizes.
+- `next-id` is only a calculation. Claim the ID it prints by creating the plan file first, then re-run it — same rule as the manual procedure below.
+- Run `validate` after any manual board edit and before marking an item Done; fix every ERROR before proceeding. Warnings flag convention drift (missing `owner=`/`completed=`, unsorted rows) and are worth fixing but do not gate.
+
 ## Workflow
 
 1. **Capture:** Check for duplicates. Allocate the ID by running the commands under ID allocation in this checkout — do not choose one from memory. Create `.plans/<ID>-<slug>.md` first, confirm the re-check, then add the Todo row. Read [plan template](references/plan-template.md) when creating or expanding plans. Every plan must include an implementation overview describing the overall approach and architectural changes so human reviewers understand the plan without deducing it from granular steps. Default to a ready plan when enough context exists; otherwise save a draft with the required expansion warning. Recording work does not authorize implementation.
 2. **Prepare:** Before implementation, inspect current source, expand drafts (including a clear implementation overview and verified steps), resolve blocking unknowns, and verify dependencies. Mark the plan `ready` only when executable without guessing requirements.
-3. **Claim:** Move an eligible item to In Progress; Notes must contain `owner=<agent/session>; updated=<UTC timestamp>`. Follow requested scope; otherwise choose the highest-priority eligible item. Never take another active owner's item without a handoff.
+3. **Claim:** Move an eligible item to In Progress with `board.py move <ID> in-progress --notes "owner=<agent/session>; updated=<UTC timestamp>"` (Notes must contain `owner=` and `updated=`). Follow requested scope; otherwise choose the highest-priority eligible item. Never take another active owner's item without a handoff.
 4. **Execute:** Work in the plan's verified increments. Update its checkboxes, evidence, and next action after each increment and before stopping. Record newly discovered unrelated work separately.
-5. **Block:** Move to Blocked; Notes must identify the blocker/dependency and concrete unblock action. Preserve owner and detailed handoff in the plan. When resolved, return to Todo or explicitly reclaim.
+5. **Block:** Move to Blocked with `board.py move <ID> blocked --notes "<blocker and concrete unblock action>"`. Preserve owner and detailed handoff in the plan. When resolved, return to Todo or explicitly reclaim.
 6. **Complete:** Check every acceptance criterion against evidence, run applicable checks, and review the diff for scope/regressions. Plan names (`T` plus 3 or more digits — IDs are zero-padded to at least 3) must not appear in the source or docs to be committed; run this at the checkout root and require no output:
 
    ```bash
@@ -71,7 +86,7 @@ Use this exact structure; keep empty tables. One row per item, in exactly one se
 
    Write it in that POSIX form, not with `\b`: git grep uses the system regex engine, and the BSD regex on macOS never matches `\b`, so the check would silently pass there while missing every ID. The `-I` flag makes git grep skip binary files: their bytes can coincidentally match the pattern (e.g. a PNG, whose compressed data happens to spell out a `T`-plus-digits token), and a binary cannot carry a `repo-todo:ignore` pragma to exempt it, so without `-I` the gate would fail on an asset that is not a plan reference at all.
 
-   A match is a candidate, not proof of a plan reference: source may legitimately hold a token of that shape (part number, model, fixture, error code). Resolve each one instead of guessing. Remove real plan references. For a legitimate token, confirm it is not a plan in this checkout (`ls -1 .plans/<ID>*.md` prints nothing), then clear it with judgment. When the token is obviously not a plan reference — its meaning is plain from the line itself (a fixture, a hex constant, an error code, a version string) — you may dismiss it without touching the source; record the `file:line`, the token, and the reason in the plan's evidence so a reviewer can audit the call. When the token could plausibly be mistaken for a plan ID, make the exemption visible: add a trailing `repo-todo:ignore` comment on that line beside the token, and record the `file:line` and reason in the plan's evidence. Never exempt or dismiss a line whose token does resolve to a plan in `.plans/`, and never mark a whole file or directory to silence the check. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `completed=YYYY-MM-DD`. Reopen regressions under the same ID.
+   A match is a candidate, not proof of a plan reference: source may legitimately hold a token of that shape (part number, model, fixture, error code). Resolve each one instead of guessing. Remove real plan references. For a legitimate token, confirm it is not a plan in this checkout (`ls -1 .plans/<ID>*.md` prints nothing), then clear it with judgment. When the token is obviously not a plan reference — its meaning is plain from the line itself (a fixture, a hex constant, an error code, a version string) — you may dismiss it without touching the source; record the `file:line`, the token, and the reason in the plan's evidence so a reviewer can audit the call. When the token could plausibly be mistaken for a plan ID, make the exemption visible: add a trailing `repo-todo:ignore` comment on that line beside the token, and record the `file:line` and reason in the plan's evidence. Never exempt or dismiss a line whose token does resolve to a plan in `.plans/`, and never mark a whole file or directory to silence the check. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `board.py move <ID> done --notes "completed=YYYY-MM-DD"`. Reopen regressions under the same ID.
 
 ## Do All
 
@@ -83,7 +98,7 @@ Use when told to do all todo items, tasks, or plans. Process ready and draft ite
 
 ## Concurrency
 
-Serialize board writes through one coordinator when agents run concurrently; an owner cell is not a lock. Re-read before edits and preserve others' changes. After each update, verify unique IDs across both `todo.md` and `.plans/`, valid priorities, existing plan links, and exactly one row per task. Keep completed records and plans.
+Serialize board writes through one coordinator when agents run concurrently; an owner cell is not a lock. Re-read before edits and preserve others' changes. After each update, run `board.py validate` — it verifies unique IDs across both `todo.md` and `.plans/`, valid priorities, existing plan links, and exactly one row per task. Keep completed records and plans. `board.py` replaces the board file atomically, but it does not serialize writers — the coordinator rule still applies.
 
 ## Standing facts (2026-10)
 

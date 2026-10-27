@@ -71,7 +71,7 @@ Use this exact structure; keep empty tables. One row per item, in exactly one se
 
    Write it in that POSIX form, not with `\b`: git grep uses the system regex engine, and the BSD regex on macOS never matches `\b`, so the check would silently pass there while missing every ID.
 
-   A match is a candidate, not proof of a plan reference: source may legitimately hold a token of that shape (part number, model, fixture, error code). Resolve each one instead of guessing. Remove real plan references. For a legitimate token, confirm it is not a plan in this checkout (`ls -1 .plans/<ID>*.md` prints nothing), add a trailing `repo-todo:ignore` comment on that line beside the token, and record the `file:line` and the reason in the plan's evidence — the pragma exempts that one line, visibly, for the next reviewer. Never exempt a line whose token does resolve to a plan in `.plans/`, and never mark a whole file or directory to silence the check. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `completed=YYYY-MM-DD`. Reopen regressions under the same ID.
+   A match is a candidate, not proof of a plan reference: source may legitimately hold a token of that shape (part number, model, fixture, error code). Resolve each one instead of guessing. Remove real plan references. For a legitimate token, confirm it is not a plan in this checkout (`ls -1 .plans/<ID>*.md` prints nothing), then clear it with judgment. When the token is obviously not a plan reference — its meaning is plain from the line itself (a fixture, a hex constant, an error code, a version string) — you may dismiss it without touching the source; record the `file:line`, the token, and the reason in the plan's evidence so a reviewer can audit the call. When the token could plausibly be mistaken for a plan ID, make the exemption visible: add a trailing `repo-todo:ignore` comment on that line beside the token, and record the `file:line` and reason in the plan's evidence. Never exempt or dismiss a line whose token does resolve to a plan in `.plans/`, and never mark a whole file or directory to silence the check. Missing or failing required checks prevent Done. Record results and residual limitations in the plan; move to Done with `completed=YYYY-MM-DD`. Reopen regressions under the same ID.
 
 ## Do All
 
@@ -84,3 +84,8 @@ Use when told to do all todo items, tasks, or plans. Process ready and draft ite
 ## Concurrency
 
 Serialize board writes through one coordinator when agents run concurrently; an owner cell is not a lock. Re-read before edits and preserve others' changes. After each update, verify unique IDs across both `todo.md` and `.plans/`, valid priorities, existing plan links, and exactly one row per task. Keep completed records and plans.
+
+## Standing facts (2026-10)
+
+- Checkouts carrying repo-todo: Hermes `skills/`, e14 + steve-air `opencode` skills dirs, steve-air Claude `skills/`, staging at `~/workspace/repo-todo`.
+- Multi-task pushes = Do-All: run subagents SERIALLY; the parent verifies + commits. Never let two agents edit the same files in parallel.
